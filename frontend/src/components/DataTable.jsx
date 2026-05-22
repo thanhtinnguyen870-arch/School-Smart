@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 export default function DataTable({ columns, data = [], searchKey, filters, actions }) {
   const [search, setSearch] = useState("");
@@ -14,47 +15,53 @@ export default function DataTable({ columns, data = [], searchKey, filters, acti
   const rows = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="card overflow-hidden">
+    <div className="soft-panel overflow-hidden p-4">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <input
-          className="input max-w-sm"
-          placeholder="Tìm kiếm..."
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
-            setPage(1);
-          }}
-        />
-        {filters}
+        <label className="relative w-full max-w-sm">
+          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            className="input pl-11"
+            placeholder="Tìm kiếm..."
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
+          />
+        </label>
+        {filters && <div className="flex flex-wrap gap-2">{filters}</div>}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-white/10">
+      <div className="overflow-x-auto rounded-[20px] border border-slate-200 bg-white">
         <table className="w-full text-left text-sm">
-          <thead className="bg-white/[0.035] text-slate-300">
+          <thead className="bg-gradient-to-r from-sky-50 via-indigo-50 to-fuchsia-50 text-slate-700">
             <tr>
               {columns.map((column) => (
-                <th key={column.key} className="border-b border-white/10 px-3 py-3 font-semibold">
+                <th key={column.key} className="border-b border-slate-200 px-4 py-3.5 font-black">
                   {column.label}
                 </th>
               ))}
-              {actions && <th className="border-b border-white/10 px-3 py-3 font-semibold">Thao tác</th>}
+              {actions && <th className="border-b border-slate-200 px-4 py-3.5 font-black">Thao tác</th>}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row._id || row.id} className="border-b border-white/10 transition last:border-b-0 hover:bg-cyan/5">
+              <tr key={row._id || row.id} className="border-b border-slate-100 transition duration-200 last:border-b-0 hover:bg-sky-50/80">
                 {columns.map((column) => (
-                  <td key={column.key} className="px-3 py-3 text-slate-200">
+                  <td key={column.key} className="px-4 py-3.5 font-medium text-slate-700">
                     {column.render ? column.render(row) : row[column.key]}
                   </td>
                 ))}
-                {actions && <td className="px-3 py-3">{actions(row)}</td>}
+                {actions && <td className="px-4 py-3.5">{actions(row)}</td>}
               </tr>
             ))}
             {!rows.length && (
               <tr>
-                <td colSpan={columns.length + 1} className="py-12 text-center text-slate-500">
-                  Không có dữ liệu
+                <td colSpan={columns.length + (actions ? 1 : 0)} className="py-14 text-center">
+                  <div className="mx-auto max-w-xs rounded-[22px] bg-gradient-to-br from-sky-50 to-fuchsia-50 p-6">
+                    <p className="text-lg font-black text-slate-800">Chưa có dữ liệu</p>
+                    <p className="mt-1 text-sm text-slate-500">Dữ liệu sẽ xuất hiện ở đây sau khi bạn thêm mới hoặc đồng bộ.</p>
+                  </div>
                 </td>
               </tr>
             )}
@@ -62,15 +69,15 @@ export default function DataTable({ columns, data = [], searchKey, filters, acti
         </table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-sm text-slate-400">
+      <div className="mt-4 flex flex-col gap-3 text-sm font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <span>{filtered.length} bản ghi</span>
         <div className="flex items-center gap-2">
-          <button className="rounded-lg border border-white/10 px-3 py-1.5 transition hover:border-cyan/40 hover:text-cyan disabled:opacity-40" disabled={page === 1} onClick={() => setPage(page - 1)}>
-            Trước
+          <button className="action-button px-3 py-2 disabled:opacity-40" disabled={page === 1} onClick={() => setPage(page - 1)}>
+            <ChevronLeft size={16} /> Trước
           </button>
-          <span className="rounded-lg bg-white/[0.045] px-3 py-1.5 text-slate-300">{page}/{pages}</span>
-          <button className="rounded-lg border border-white/10 px-3 py-1.5 transition hover:border-cyan/40 hover:text-cyan disabled:opacity-40" disabled={page === pages} onClick={() => setPage(page + 1)}>
-            Sau
+          <span className="rounded-2xl bg-gradient-to-br from-sky-100 to-indigo-100 px-4 py-2 font-black text-ocean">{page}/{pages}</span>
+          <button className="action-button px-3 py-2 disabled:opacity-40" disabled={page === pages} onClick={() => setPage(page + 1)}>
+            Sau <ChevronRight size={16} />
           </button>
         </div>
       </div>

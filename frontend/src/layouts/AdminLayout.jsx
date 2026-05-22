@@ -5,11 +5,11 @@ import Topbar from "../components/Topbar";
 
 export default function AdminLayout() {
   return (
-    <div className="min-h-screen bg-ink">
+    <div className="min-h-screen bg-canvas text-slate-900">
       <Sidebar role="admin" />
       <main className="lg:pl-72">
         <Topbar />
-        <div className="p-4 lg:p-8">
+        <div className="p-4 pb-28 lg:p-8">
           <Outlet />
         </div>
       </main>

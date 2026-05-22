@@ -62,7 +62,7 @@ const run = async () => {
     classId: s.classId,
     date: today,
     checkInTime: new Date(today.getTime() + (7 * 60 + i * 4) * 60000),
-    status: i > 4 ? "late" : "present",
+    status: i > 4 ? "excused" : "present",
     confidence: 92 + i,
     method: i % 2 ? "manual" : "face"
   })));
