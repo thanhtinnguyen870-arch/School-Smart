@@ -1,24 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { ImagePlus, UploadCloud } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosClient from "../../api/axiosClient";
 
 export default function CreateTest() {
   const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
   const [useWordFile, setUseWordFile] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    axiosClient.get("/classes").then(setClasses);
-  }, []);
+    axiosClient.get("/classes").then((rows) => {
+      const nextClasses = rows || [];
+      setClasses(nextClasses);
+      setSelectedClassId(searchParams.get("classId") || nextClasses[0]?._id || "");
+    });
+  }, [searchParams]);
 
   const save = async (event) => {
     event.preventDefault();
     if (submitting) return;
 
     const formData = new FormData(event.currentTarget);
+    if (!selectedClassId) {
+      toast.warning("Vui lòng chọn lớp trước.");
+      return;
+    }
+    formData.set("classId", selectedClassId);
     const file = formData.get("file");
     const hasFile = file && file.name;
 
@@ -98,7 +109,7 @@ export default function CreateTest() {
 
         <label className="grid gap-2 text-sm font-semibold text-slate-300">
           Lớp học
-          <select name="classId" className="input">
+          <select name="classId" className="input" value={selectedClassId} onChange={(event) => setSelectedClassId(event.target.value)} required>
             <option value="">Chọn lớp học</option>
             {classes.map((classItem) => (
               <option key={classItem._id} value={classItem._id}>
@@ -212,7 +223,7 @@ Câu      1   2
         </div>
       )}
 
-      <button type="submit" className="btn-primary" disabled={submitting}>
+      <button type="submit" className="btn-primary" disabled={submitting || !selectedClassId}>
         {submitting ? "Đang tạo..." : "Tạo bài kiểm tra"}
       </button>
     </form>

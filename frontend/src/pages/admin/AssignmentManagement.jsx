@@ -1,33 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { FileText, Image, Plus } from "lucide-react";
 import { toast } from "react-toastify";
 import axiosClient from "../../api/axiosClient";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
 
+const subjects = ["Toán", "Ngữ Văn", "Vật Lý", "Hóa Học", "Tiếng Anh", "Sinh Học"];
 const isImageFile = (row) => row.fileType?.startsWith("image/");
 
 export default function AssignmentManagement() {
   const [items, setItems] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
   const [open, setOpen] = useState(false);
 
-  const load = () =>
-    Promise.all([axiosClient.get("/assignments"), axiosClient.get("/classes")]).then(([assignmentRows, classRows]) => {
-      setItems(assignmentRows || []);
-      setClasses(classRows || []);
-    });
+  const selectedClass = useMemo(() => classes.find((item) => item._id === selectedClassId), [classes, selectedClassId]);
+
+  const load = async () => {
+    const [assignmentRows, classRows] = await Promise.all([axiosClient.get("/assignments"), axiosClient.get("/classes")]);
+    const nextClasses = classRows || [];
+    setItems(assignmentRows || []);
+    setClasses(nextClasses);
+    setSelectedClassId((current) => current || nextClasses[0]?._id || "");
+  };
 
   useEffect(() => {
     load();
   }, []);
 
+  const filteredItems = useMemo(
+    () => items.filter((item) => (item.classId?._id || item.classId) === selectedClassId),
+    [items, selectedClassId]
+  );
+
   const save = async (event) => {
     event.preventDefault();
+    if (!selectedClassId) return toast.warning("Vui lòng chọn lớp.");
+
+    const formData = new FormData(event.currentTarget);
+    formData.set("classId", selectedClassId);
+
     try {
-      await axiosClient.post("/assignments", new FormData(event.currentTarget), {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axiosClient.post("/assignments", formData, { headers: { "Content-Type": "multipart/form-data" } });
       toast.success("Đã giao bài tập.");
       setOpen(false);
       await load();
@@ -37,23 +51,33 @@ export default function AssignmentManagement() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="page-shell">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-black">Bài tập</h1>
-        </div>
-        <button onClick={() => setOpen(true)} className="btn-primary">
+        <h1 className="text-2xl font-black">Bài tập</h1>
+        <button onClick={() => selectedClassId ? setOpen(true) : toast.warning("Vui lòng chọn lớp trước.")} className="btn-primary" disabled={!selectedClassId}>
           <Plus size={18} /> Tạo bài tập
         </button>
       </div>
 
+      <section className="soft-panel grid gap-4 p-4 lg:grid-cols-[1fr_auto] lg:items-end">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
+          Lớp học
+          <select className="input" value={selectedClassId} onChange={(event) => setSelectedClassId(event.target.value)}>
+            <option value="">Chọn lớp</option>
+            {classes.map((classItem) => (
+              <option key={classItem._id} value={classItem._id}>{classItem.className} - {classItem.classCode}</option>
+            ))}
+          </select>
+        </label>
+        <span className="badge badge-info">{selectedClass ? selectedClass.className : "Chưa chọn lớp"}</span>
+      </section>
+
       <DataTable
-        data={items}
+        data={filteredItems}
         searchKey="title"
         columns={[
           { key: "title", label: "Tiêu đề" },
           { key: "subject", label: "Môn học" },
-          { key: "class", label: "Lớp", render: (row) => row.classId?.className || "-" },
           { key: "deadline", label: "Hạn nộp", render: (row) => row.deadline?.slice(0, 10) || "-" },
           {
             key: "file",
@@ -63,43 +87,38 @@ export default function AssignmentManagement() {
                 {isImageFile(row) ? <Image size={15} /> : <FileText size={15} />}
                 {isImageFile(row) ? "Ảnh" : "Tệp"}
               </span>
-            ) : "-",
+            ) : "-"
           },
-          { key: "status", label: "Trạng thái" },
+          { key: "status", label: "Trạng thái" }
         ]}
       />
 
       <Modal open={open} title="Tạo bài tập" onClose={() => setOpen(false)}>
         <form onSubmit={save} className="grid gap-3">
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <div className="rounded-2xl bg-sky-50 px-4 py-3 text-sm font-bold text-sky-700">
+            Lớp: {selectedClass?.className || "-"}
+          </div>
+          <label className="grid gap-2 text-sm font-black text-slate-700">
+            Môn học
+            <select name="subject" className="input" required>
+              <option value="">Chọn môn</option>
+              {subjects.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
+            </select>
+          </label>
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             Tiêu đề
             <input name="title" className="input" placeholder="Tiêu đề bài tập" required />
           </label>
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
-            Môn học
-            <input name="subject" className="input" placeholder="Ví dụ: Toán" />
+          <label className="grid gap-2 text-sm font-black text-slate-700">
+            Nội dung
+            <textarea name="description" className="input min-h-32" />
           </label>
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
-            Lớp học
-            <select name="classId" className="input">
-              <option value="">Chọn lớp học</option>
-              {classes.map((classItem) => (
-                <option key={classItem._id} value={classItem._id}>
-                  {classItem.className}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
-            Nội dung tự luận
-            <textarea name="description" className="input min-h-32" placeholder="Nhập đề bài, yêu cầu tự luận hoặc hướng dẫn làm bài" />
-          </label>
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             Hạn nộp
             <input type="datetime-local" name="deadline" className="input" />
           </label>
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
-            Ảnh bài tập / file đính kèm
+          <label className="grid gap-2 text-sm font-black text-slate-700">
+            Đính kèm
             <input type="file" name="file" className="input" accept=".png,.jpg,.jpeg,.webp,.pdf,.doc,.docx,.xls,.xlsx" />
           </label>
           <button className="btn-primary">Lưu bài tập</button>

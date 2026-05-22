@@ -13,6 +13,8 @@ export default function FaceEnrollment() {
   const [saving, setSaving] = useState(false);
   const [modelsReady, setModelsReady] = useState(false);
   const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [lastEnrolledName, setLastEnrolledName] = useState("");
   const [previewStudent, setPreviewStudent] = useState(null);
@@ -21,18 +23,35 @@ export default function FaceEnrollment() {
   const enrolledStudents = useMemo(() => students.filter(hasValidFaceSample), [students]);
   const unregisteredStudents = useMemo(() => students.filter((s) => !hasValidFaceSample(s)), [students]);
 
-  const load = async () => {
-    const result = await axiosClient.get("/students?limit=200");
+  const loadClasses = async () => {
+    const result = await axiosClient.get("/classes");
+    const nextClasses = result || [];
+    setClasses(nextClasses);
+    setSelectedClassId((current) => current || nextClasses[0]?._id || "");
+  };
+
+  const load = async (classId = selectedClassId) => {
+    if (!classId) {
+      setStudents([]);
+      return;
+    }
+    const result = await axiosClient.get(`/students?limit=200&classId=${classId}`);
     setStudents(result.items || []);
   };
 
   useEffect(() => {
-    load();
+    loadClasses();
     loadFaceApiModels()
       .then(() => setModelsReady(true))
       .catch(() => toast.error("Không thể tải mô hình face-api.js"));
     return () => closeCamera();
   }, []);
+
+  useEffect(() => {
+    setSelectedStudentId("");
+    setLastEnrolledName("");
+    load(selectedClassId);
+  }, [selectedClassId]);
 
   const openCamera = async () => {
     if (videoRef.current?.srcObject) {
@@ -94,7 +113,7 @@ export default function FaceEnrollment() {
       toast.success(remaining ? `Đăng ký thành công cho ${student.fullName}. Còn ${remaining} học sinh.` : "Đã đăng ký đủ khuôn mặt cho tất cả học sinh.");
       setLastEnrolledName(student.fullName);
       setSelectedStudentId("");
-      await load();
+      await load(selectedClassId);
     } catch (error) {
       toast.error(error.message || "Đăng ký khuôn mặt thất bại");
     } finally {
@@ -110,7 +129,7 @@ export default function FaceEnrollment() {
       toast.success(`Đã xóa mẫu khuôn mặt của ${student.fullName}.`);
       if (selectedStudentId === student._id) setSelectedStudentId("");
       setLastEnrolledName("");
-      await load();
+      await load(selectedClassId);
     } catch (error) {
       toast.error(error.message || "Không thể xóa mẫu khuôn mặt");
     }
@@ -127,6 +146,21 @@ export default function FaceEnrollment() {
           <button className="rounded-lg border border-rose px-4 py-2 text-rose" onClick={closeCamera}><Square size={18} className="inline" /> Tắt camera</button>
         </div>
       </div>
+
+      <section className="soft-panel grid gap-4 p-4 lg:grid-cols-[1fr_auto] lg:items-end">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
+          Lớp học
+          <select className="input" value={selectedClassId} onChange={(event) => setSelectedClassId(event.target.value)}>
+            <option value="">Chọn lớp</option>
+            {classes.map((classItem) => (
+              <option key={classItem._id} value={classItem._id}>
+                {classItem.className} - {classItem.classCode}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="badge badge-info">{students.length} học sinh</span>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_.85fr]">
         <div className="relative overflow-hidden rounded-2xl bg-black neon-border">
