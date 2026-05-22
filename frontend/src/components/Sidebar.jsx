@@ -20,27 +20,27 @@ import {
 import { useAuthStore } from "../store/authStore";
 
 const adminItems = [
-  ["Dashboard", "/admin/dashboard", Home, "from-sky-500 to-blue-700"],
-  ["Đăng ký khuôn mặt", "/admin/face-enrollment", ScanFace, "from-violet-600 to-fuchsia-600"],
-  ["Điểm danh AI", "/admin/attendance", Camera, "from-cyan-500 to-blue-700"],
-  ["Học sinh", "/admin/students", Users, "from-emerald-500 to-teal-700"],
-  ["Lớp học", "/admin/classes", Layers3, "from-amber-500 to-orange-600"],
-  ["Điểm số", "/admin/grades", GraduationCap, "from-pink-600 to-rose-600"],
-  ["Bài tập", "/admin/assignments", BookOpen, "from-lime-500 to-emerald-600"],
-  ["Bài kiểm tra", "/admin/tests", FileQuestion, "from-indigo-600 to-violet-700"],
-  ["Thống kê", "/admin/reports", BarChart3, "from-orange-500 to-yellow-500"],
-  ["Thông báo", "/admin/notifications", Bell, "from-rose-600 to-pink-600"],
-  ["Cài đặt", "/admin/settings", Settings, "from-slate-600 to-slate-800"]
+  ["Dashboard", "/admin/dashboard", Home, "linear-gradient(135deg, #38bdf8, #2563eb)"],
+  ["Đăng ký khuôn mặt", "/admin/face-enrollment", ScanFace, "linear-gradient(135deg, #7c3aed, #ec4899)"],
+  ["Điểm danh AI", "/admin/attendance", Camera, "linear-gradient(135deg, #06b6d4, #2563eb)"],
+  ["Học sinh", "/admin/students", Users, "linear-gradient(135deg, #22c55e, #14b8a6)"],
+  ["Lớp học", "/admin/classes", Layers3, "linear-gradient(135deg, #f59e0b, #f97316)"],
+  ["Điểm số", "/admin/grades", GraduationCap, "linear-gradient(135deg, #ec4899, #e11d48)"],
+  ["Bài tập", "/admin/assignments", BookOpen, "linear-gradient(135deg, #84cc16, #22c55e)"],
+  ["Bài kiểm tra", "/admin/tests", FileQuestion, "linear-gradient(135deg, #4f46e5, #7c3aed)"],
+  ["Thống kê", "/admin/reports", BarChart3, "linear-gradient(135deg, #f97316, #facc15)"],
+  ["Thông báo", "/admin/notifications", Bell, "linear-gradient(135deg, #e11d48, #ec4899)"],
+  ["Cài đặt", "/admin/settings", Settings, "linear-gradient(135deg, #475569, #0f172a)"]
 ];
 
 const studentItems = [
-  ["Trang chủ", "/student/dashboard", Home, "from-sky-500 to-blue-700"],
-  ["Cá nhân", "/student/profile", UserRound, "from-violet-600 to-fuchsia-600"],
-  ["Điểm của tôi", "/student/grades", GraduationCap, "from-pink-600 to-rose-600"],
-  ["Lịch sử", "/student/attendance", ClipboardCheck, "from-emerald-500 to-teal-700"],
-  ["Bài tập", "/student/assignments", BookOpen, "from-lime-500 to-emerald-600"],
-  ["Bài kiểm tra", "/student/tests", FileQuestion, "from-indigo-600 to-violet-700"],
-  ["Thông báo", "/student/notifications", Bell, "from-rose-600 to-pink-600"]
+  ["Trang chủ", "/student/dashboard", Home, "linear-gradient(135deg, #38bdf8, #2563eb)"],
+  ["Cá nhân", "/student/profile", UserRound, "linear-gradient(135deg, #7c3aed, #ec4899)"],
+  ["Điểm của tôi", "/student/grades", GraduationCap, "linear-gradient(135deg, #ec4899, #e11d48)"],
+  ["Lịch sử", "/student/attendance", ClipboardCheck, "linear-gradient(135deg, #22c55e, #14b8a6)"],
+  ["Bài tập", "/student/assignments", BookOpen, "linear-gradient(135deg, #84cc16, #22c55e)"],
+  ["Bài kiểm tra", "/student/tests", FileQuestion, "linear-gradient(135deg, #4f46e5, #7c3aed)"],
+  ["Thông báo", "/student/notifications", Bell, "linear-gradient(135deg, #e11d48, #ec4899)"]
 ];
 
 function SidebarItem({ item, compact = false }) {
@@ -55,17 +55,25 @@ function SidebarItem({ item, compact = false }) {
           compact ? "min-w-[78px] flex-col gap-1 px-2 py-2 text-[11px]" : ""
         } ${
           isActive
-            ? `bg-gradient-to-br ${gradient} text-white shadow-neon`
+            ? "text-white shadow-neon"
             : "text-slate-700 hover:-translate-y-0.5 hover:bg-white/90 hover:text-slate-950 hover:shadow-card"
         }`
       }
+      style={({ isActive }) => ({
+        background: isActive ? gradient : undefined,
+        boxShadow: isActive ? "0 18px 46px rgba(37, 99, 235, .22)" : undefined
+      })}
     >
       {({ isActive }) => (
         <>
           <span
-            className={`grid place-items-center rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg ring-2 ring-white/90 transition duration-300 ${
+            className={`grid place-items-center rounded-2xl text-white shadow-lg ring-2 ring-white/90 transition duration-300 ${
               compact ? "h-10 w-10" : "h-11 w-11"
             } ${isActive ? "scale-110 ring-4 ring-white/95" : "group-hover:scale-110 group-hover:rotate-3"}`}
+            style={{
+              background: gradient,
+              boxShadow: "0 12px 28px rgba(15, 23, 42, .18)"
+            }}
           >
             <Icon size={compact ? 19 : 21} strokeWidth={2.8} />
           </span>
