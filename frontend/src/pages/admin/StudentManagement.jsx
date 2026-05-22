@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Edit, Plus, Trash2, Upload } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Edit, Plus, Trash2, Upload, Users } from "lucide-react";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import axiosClient from "../../api/axiosClient";
@@ -10,24 +10,51 @@ const textFields = [
   { name: "studentCode", label: "Mã học sinh", required: true },
   { name: "fullName", label: "Họ và tên", required: true },
   { name: "email", label: "Email đăng nhập", type: "email", required: true },
-  { name: "phone", label: "Số điện thoại" },
+  { name: "phone", label: "Số điện thoại" }
 ];
 
 export default function StudentManagement() {
   const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [selectedClassId, setSelectedClassId] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const load = () =>
-    Promise.all([axiosClient.get("/students?limit=200"), axiosClient.get("/classes")]).then(([studentRows, classRows]) => {
+  const selectedClass = useMemo(
+    () => classes.find((classItem) => classItem._id === selectedClassId),
+    [classes, selectedClassId]
+  );
+
+  const loadClasses = async () => {
+    const classRows = await axiosClient.get("/classes");
+    const nextClasses = classRows || [];
+    setClasses(nextClasses);
+    setSelectedClassId((current) => current || nextClasses[0]?._id || "");
+  };
+
+  const loadStudents = async (classId = selectedClassId) => {
+    if (!classId) {
+      setStudents([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const studentRows = await axiosClient.get(`/students?limit=200&classId=${classId}`);
       setStudents(studentRows.items || []);
-      setClasses(classRows || []);
-    });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    load();
+    loadClasses();
   }, []);
+
+  useEffect(() => {
+    loadStudents(selectedClassId);
+  }, [selectedClassId]);
 
   const closeModal = () => {
     setOpen(false);
@@ -55,12 +82,13 @@ export default function StudentManagement() {
               <b>Mật khẩu mặc định:</b> ${result.account?.password || "123456"}
             </div>
           `,
-          confirmButtonText: "Đã hiểu",
+          confirmButtonText: "Đã hiểu"
         });
       }
 
       closeModal();
-      await load();
+      await loadStudents(data.classId || selectedClassId);
+      if (data.classId && data.classId !== selectedClassId) setSelectedClassId(data.classId);
     } catch (error) {
       toast.error(error.message || "Không thể lưu học sinh.");
     }
@@ -73,13 +101,13 @@ export default function StudentManagement() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
+      cancelButtonText: "Hủy"
     });
 
     if (result.isConfirmed) {
       await axiosClient.delete(`/students/${row._id}`);
       toast.success("Đã xóa học sinh.");
-      await load();
+      await loadStudents();
     }
   };
 
@@ -89,20 +117,49 @@ export default function StudentManagement() {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="page-shell">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black">Quản lý học sinh</h1>
-          <p className="text-sm text-slate-400">Thêm học sinh với thông tin cơ bản và tài khoản đăng nhập.</p>
+          <h1 className="text-2xl font-black text-slate-950">Quản lý học sinh</h1>
+          <p className="text-sm font-semibold text-slate-500">Chọn lớp để xem, thêm, sửa hoặc xóa học sinh trong lớp đó.</p>
         </div>
-        <button className="btn-primary" onClick={openCreateModal}>
+        <button className="btn-primary" onClick={openCreateModal} disabled={!classes.length}>
           <Plus size={18} /> Thêm học sinh
         </button>
       </div>
 
+      <section className="soft-panel grid gap-4 p-4 lg:grid-cols-[1fr_auto] lg:items-end">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
+          Lớp học
+          <select className="input" value={selectedClassId} onChange={(event) => setSelectedClassId(event.target.value)}>
+            <option value="">Chọn lớp để xem học sinh</option>
+            {classes.map((classItem) => (
+              <option key={classItem._id} value={classItem._id}>
+                {classItem.className} - {classItem.classCode}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-fuchsia-50 px-4 py-3 text-sm font-bold text-slate-700">
+          <div className="flex items-center gap-2">
+            <Users size={18} className="text-ocean" />
+            {selectedClass ? `${students.length} học sinh trong lớp ${selectedClass.className}` : "Chưa chọn lớp"}
+          </div>
+        </div>
+      </section>
+
       <DataTable
         data={students}
         searchKey="fullName"
+        searchPlaceholder={selectedClass ? `Tìm trong lớp ${selectedClass.className}...` : "Tìm kiếm học sinh..."}
+        filters={
+          selectedClass && (
+            <span className="badge badge-info">
+              {loading ? "Đang tải..." : `Đang xem: ${selectedClass.className}`}
+            </span>
+          )
+        }
         columns={[
           { key: "studentCode", label: "Mã HS" },
           { key: "fullName", label: "Họ tên" },
@@ -114,18 +171,18 @@ export default function StudentManagement() {
             key: "account",
             label: "Tài khoản",
             render: (row) => (
-              <span className={`rounded-full px-2 py-1 text-xs ${row.userId ? "bg-mint/10 text-mint" : "bg-amber/10 text-amber"}`}>
+              <span className={`badge ${row.userId ? "badge-success" : "badge-warning"}`}>
                 {row.userId ? "Đã tạo" : "Chưa có"}
               </span>
-            ),
-          },
+            )
+          }
         ]}
         actions={(row) => (
-          <div className="flex gap-2">
-            <button className="text-cyan" title="Sửa học sinh" onClick={() => { setEditing(row); setOpen(true); }}>
+          <div className="flex items-center gap-2">
+            <button className="rounded-xl bg-sky-50 p-2 text-ocean transition hover:bg-ocean hover:text-white" title="Sửa học sinh" onClick={() => { setEditing(row); setOpen(true); }}>
               <Edit size={17} />
             </button>
-            <label className="cursor-pointer text-violet" title="Tải ảnh khuôn mặt">
+            <label className="cursor-pointer rounded-xl bg-violet-50 p-2 text-violet transition hover:bg-violet hover:text-white" title="Tải ảnh khuôn mặt">
               <Upload size={17} />
               <input
                 type="file"
@@ -138,11 +195,11 @@ export default function StudentManagement() {
                   files.forEach((file) => formData.append("faces", file));
                   await axiosClient.post(`/students/${row._id}/upload-face`, formData);
                   toast.success("Đã tải ảnh khuôn mặt.");
-                  await load();
+                  await loadStudents();
                 }}
               />
             </label>
-            <button className="text-rose" title="Xóa học sinh" onClick={() => remove(row)}>
+            <button className="rounded-xl bg-rose-50 p-2 text-rose transition hover:bg-rose hover:text-white" title="Xóa học sinh" onClick={() => remove(row)}>
               <Trash2 size={17} />
             </button>
           </div>
@@ -152,13 +209,13 @@ export default function StudentManagement() {
       <Modal open={open} title={editing ? "Sửa học sinh" : "Thêm học sinh"} onClose={closeModal}>
         <form key={editing?._id || "create-student"} onSubmit={save} className="grid gap-3 md:grid-cols-2">
           {!editing && (
-            <div className="rounded-xl border border-cyan/30 bg-cyan/10 p-3 text-sm text-cyan md:col-span-2">
+            <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3 text-sm font-semibold text-sky-700 md:col-span-2">
               Mật khẩu mặc định của tài khoản học sinh là 123456.
             </div>
           )}
 
           {textFields.map((field) => (
-            <label key={field.name} className="grid gap-2 text-sm font-semibold text-slate-300">
+            <label key={field.name} className="grid gap-2 text-sm font-black text-slate-700">
               {field.label}
               <input
                 name={field.name}
@@ -171,7 +228,7 @@ export default function StudentManagement() {
             </label>
           ))}
 
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             Giới tính
             <select name="gender" defaultValue={editing?.gender || ""} className="input" required>
               <option value="">Chọn giới tính</option>
@@ -181,9 +238,9 @@ export default function StudentManagement() {
             </select>
           </label>
 
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             Lớp học
-            <select name="classId" defaultValue={editing?.classId?._id || ""} className="input" required>
+            <select name="classId" defaultValue={editing?.classId?._id || selectedClassId || ""} className="input" required>
               <option value="">Chọn lớp học</option>
               {classes.map((classItem) => (
                 <option key={classItem._id} value={classItem._id}>

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
-export default function DataTable({ columns, data = [], searchKey, filters, actions }) {
+export default function DataTable({ columns, data = [], searchKey, filters, actions, searchPlaceholder = "Tìm kiếm..." }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 8;
@@ -18,10 +18,11 @@ export default function DataTable({ columns, data = [], searchKey, filters, acti
     <div className="soft-panel overflow-hidden p-4">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <label className="relative w-full max-w-sm">
-          <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400" size={18} />
           <input
-            className="input pl-11"
-            placeholder="Tìm kiếm..."
+            className="input"
+            style={{ paddingLeft: 46 }}
+            placeholder={searchPlaceholder}
             value={search}
             onChange={(event) => {
               setSearch(event.target.value);
