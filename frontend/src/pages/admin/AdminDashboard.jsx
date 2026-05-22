@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ArrowRight, BookOpen, Camera, Clock3, GraduationCap, Layers3, Megaphone, Sparkles, Users } from "lucide-react";
 import axiosClient from "../../api/axiosClient";
@@ -22,7 +21,7 @@ export default function AdminDashboard() {
   const weekly = ["T2", "T3", "T4", "T5", "T6", "T7"].map((day, i) => ({ day, present: 70 + i * 4, absent: Math.max(2, 10 - i) }));
   const pie = [
     { name: "Có mặt", value: data.stats?.summary?.present || 0, color: "#22C55E" },
-    { name: "Nghỉ có phép", value: data.stats?.summary?.excused || 0, color: "#38BDF8" },
+    { name: "Nghỉ phép", value: data.stats?.summary?.excused || 0, color: "#38BDF8" },
     { name: "Vắng", value: data.stats?.summary?.absent || 0, color: "#EC4899" }
   ];
 
@@ -37,11 +36,8 @@ export default function AdminDashboard() {
               <Sparkles size={17} /> SMART SCHOOL AI
             </div>
             <h2 className="max-w-2xl text-3xl font-black leading-tight text-white lg:text-5xl">
-              Dashboard giáo dục thông minh, sinh động và dễ vận hành.
+              Dashboard giáo dục thông minh
             </h2>
-            <p className="mt-4 max-w-2xl text-sm font-medium text-white/82 lg:text-base">
-              Theo dõi học sinh, lớp học, điểm danh AI, bài tập và kiểm tra trong một không gian quản trị sáng rõ.
-            </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {[
@@ -60,19 +56,16 @@ export default function AdminDashboard() {
       </section>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard title="Tổng học sinh" value={data.students.length} icon={Users} tone="cyan" subtitle="Hồ sơ đang quản lý" />
-        <StatCard title="Tổng lớp" value={data.classes.length} icon={Layers3} tone="violet" subtitle="Lớp học đang mở" />
-        <StatCard title="Có mặt hôm nay" value={data.stats?.summary?.present || 0} icon={Camera} tone="mint" subtitle="Điểm danh đã ghi nhận" />
-        <StatCard title="Vắng hôm nay" value={data.stats?.summary?.absent || 0} icon={Clock3} tone="rose" subtitle="Cần theo dõi thêm" />
+        <StatCard title="Tổng học sinh" value={data.students.length} icon={Users} tone="cyan" />
+        <StatCard title="Tổng lớp" value={data.classes.length} icon={Layers3} tone="violet" />
+        <StatCard title="Có mặt hôm nay" value={data.stats?.summary?.present || 0} icon={Camera} tone="mint" />
+        <StatCard title="Vắng hôm nay" value={data.stats?.summary?.absent || 0} icon={Clock3} tone="rose" />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
         <section className="soft-panel p-5">
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-xl font-black text-slate-950">Biểu đồ điểm danh tuần</h2>
-              <p className="text-sm font-medium text-slate-500">Xu hướng có mặt và vắng trong tuần.</p>
-            </div>
+            <h2 className="text-xl font-black text-slate-950">Biểu đồ điểm danh tuần</h2>
             <a href="/admin/attendance" className="btn-primary">
               <Camera size={18} /> Bắt đầu điểm danh
             </a>
@@ -98,10 +91,7 @@ export default function AdminDashboard() {
         </section>
 
         <section className="soft-panel p-5">
-          <div className="mb-5">
-            <h2 className="text-xl font-black text-slate-950">Tỷ lệ hôm nay</h2>
-            <p className="text-sm font-medium text-slate-500">Tổng quan trạng thái điểm danh.</p>
-          </div>
+          <h2 className="mb-5 text-xl font-black text-slate-950">Tỷ lệ hôm nay</h2>
           <div className="h-64">
             <ResponsiveContainer>
               <PieChart>
@@ -136,7 +126,7 @@ export default function AdminDashboard() {
               {a.studentId?.fullName} điểm danh <span className="badge badge-success ml-2">{a.status}</span>
             </p>
           ))}
-          {!data.attendance.length && <p className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-500">Chưa có hoạt động điểm danh hôm nay.</p>}
+          {!data.attendance.length && <p className="py-4 text-sm font-semibold text-slate-500">Chưa có hoạt động</p>}
         </div>
       </div>
     </div>

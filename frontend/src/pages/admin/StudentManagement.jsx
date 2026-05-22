@@ -121,7 +121,6 @@ export default function StudentManagement() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-black text-slate-950">Quản lý học sinh</h1>
-          <p className="text-sm font-semibold text-slate-500">Chọn lớp để xem, thêm, sửa hoặc xóa học sinh trong lớp đó.</p>
         </div>
         <button className="btn-primary" onClick={openCreateModal} disabled={!classes.length}>
           <Plus size={18} /> Thêm học sinh

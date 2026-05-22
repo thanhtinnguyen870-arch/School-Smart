@@ -104,11 +104,7 @@ export default function Sidebar({ role = "admin" }) {
             </div>
             <div>
               <p className="text-sm font-black tracking-wide text-slate-950">SMART SCHOOL AI</p>
-              <p className="text-xs font-semibold text-slate-500">EdTech Dashboard</p>
             </div>
-          </div>
-          <div className="mt-4 rounded-2xl bg-white/76 px-3 py-2 text-xs font-semibold text-slate-600">
-            Quản lý học sinh, AI điểm danh và học tập thông minh.
           </div>
         </div>
 

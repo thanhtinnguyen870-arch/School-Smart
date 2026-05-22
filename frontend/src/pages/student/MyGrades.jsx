@@ -21,23 +21,20 @@ export default function MyGrades() {
 
   const selectedRows = useMemo(
     () => rows.filter((row) => row.subject === selectedSubject),
-    [rows, selectedSubject],
+    [rows, selectedSubject]
   );
 
   const latestGrade = selectedRows[0];
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-black">Điểm của tôi</h1>
-        <p className="mt-1 text-sm text-slate-400">Chọn từng môn học để xem điểm, không gom chung tất cả môn.</p>
-      </div>
+      <h1 className="text-2xl font-black">Điểm của tôi</h1>
 
       <div className="card">
-        <label className="grid max-w-md gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid max-w-md gap-2 text-sm font-semibold text-slate-700">
           Môn học
           <select className="input" value={selectedSubject} onChange={(event) => setSelectedSubject(event.target.value)}>
-            <option value="">Chọn môn để xem điểm</option>
+            <option value="">Chọn môn</option>
             {subjectOptions.map((subject) => (
               <option key={subject} value={subject}>
                 {subject}
@@ -74,14 +71,12 @@ export default function MyGrades() {
               { key: "onePeriodScore", label: "1 tiết" },
               { key: "midtermScore", label: "Giữa kỳ" },
               { key: "finalScore", label: "Cuối kỳ" },
-              { key: "averageScore", label: "TB" },
+              { key: "averageScore", label: "TB" }
             ]}
           />
         </>
       ) : (
-        <div className="card text-sm text-slate-400">
-          Hãy chọn một môn học để xem điểm chi tiết.
-        </div>
+        <div className="card text-sm text-slate-500">Chọn môn</div>
       )}
     </div>
   );

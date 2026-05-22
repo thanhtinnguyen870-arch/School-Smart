@@ -121,7 +121,6 @@ export default function FaceEnrollment() {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <h1 className="text-2xl font-black">Đăng Ký Khuôn Mặt</h1>
-          <p className="text-slate-400">Lấy mẫu khuôn mặt cho học sinh một lần. Mục Điểm danh AI sẽ dùng dữ liệu này để đối chiếu.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button className="btn-primary" onClick={openCamera}><Camera size={18} /> Mở camera</button>
@@ -159,7 +158,6 @@ export default function FaceEnrollment() {
               </select>
               {!unregisteredStudents.length && <p className="rounded-lg bg-mint/10 px-3 py-2 text-sm text-mint">Tất cả học sinh đã có mẫu khuôn mặt.</p>}
               <button className="btn-primary w-full" onClick={captureFaceSample} disabled={saving || !selectedStudentId}><ScanFace size={18} /> {saving ? "Đang xử lý face-api..." : "Chụp và lưu mẫu mặt"}</button>
-              <p className={`text-xs ${modelsReady ? "text-mint" : "text-amber"}`}>{modelsReady ? "face-api.js đã sẵn sàng" : "Đang tải mô hình face-api.js..."}</p>
             </div>
           </div>
 

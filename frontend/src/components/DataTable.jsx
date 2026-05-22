@@ -58,11 +58,8 @@ export default function DataTable({ columns, data = [], searchKey, filters, acti
             ))}
             {!rows.length && (
               <tr>
-                <td colSpan={columns.length + (actions ? 1 : 0)} className="py-14 text-center">
-                  <div className="mx-auto max-w-xs rounded-[22px] bg-gradient-to-br from-sky-50 to-fuchsia-50 p-6">
-                    <p className="text-lg font-black text-slate-800">Chưa có dữ liệu</p>
-                    <p className="mt-1 text-sm text-slate-500">Dữ liệu sẽ xuất hiện ở đây sau khi bạn thêm mới hoặc đồng bộ.</p>
-                  </div>
+                <td colSpan={columns.length + (actions ? 1 : 0)} className="py-12 text-center text-sm font-bold text-slate-500">
+                  Chưa có dữ liệu
                 </td>
               </tr>
             )}

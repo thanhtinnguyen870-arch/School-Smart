@@ -318,7 +318,6 @@ export default function FaceAttendance() {
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <h1 className="text-2xl font-black">Điểm Danh AI Theo Lớp</h1>
-          <p className="text-slate-400">Chọn lớp, mở điểm danh, face-api.js sẽ đối chiếu trong phạm vi lớp đã chọn.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button className="btn-primary" onClick={startAttendance} disabled={scanning || busy || !selectedClassId}>
@@ -347,9 +346,6 @@ export default function FaceAttendance() {
               {classes.map((item) => <option key={item._id} value={item._id}>{item.className} - {item.classCode}</option>)}
             </select>
           </label>
-          <div className="rounded-lg border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-cyan">
-            {selectedClassId ? `Đang làm việc với lớp ${selectedClass?.className}. Chỉ học sinh thuộc lớp này được đối chiếu.` : "Chọn lớp trước khi bắt đầu điểm danh."}
-          </div>
         </div>
       </div>
 
@@ -401,7 +397,6 @@ export default function FaceAttendance() {
                     <p>Lớp: {matchingStudent.classId?.className}</p>
                   </div>
                 </div>
-                <p className="rounded-lg bg-cyan/10 px-3 py-2 text-cyan">Đang so khớp descriptor camera với descriptor mẫu trong lớp.</p>
               </div>
             ) : detected ? (
               <div className="space-y-2 text-sm text-slate-300">
@@ -417,7 +412,7 @@ export default function FaceAttendance() {
                 )}
               </div>
             ) : (
-              <p className="text-slate-500">Chưa có khuôn mặt được ghi nhận.</p>
+              <p className="text-slate-500">Chưa ghi nhận</p>
             )}
           </div>
         </div>
@@ -436,7 +431,7 @@ export default function FaceAttendance() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">Chọn lớp và bấm Bắt đầu điểm danh để hệ thống tự đối chiếu khuôn mặt.</p>
+          <p className="text-sm text-slate-500">Chưa có nhật ký</p>
         )}
       </div>
 

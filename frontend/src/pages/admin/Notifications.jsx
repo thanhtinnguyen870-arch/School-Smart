@@ -61,7 +61,6 @@ export default function Notifications() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-black">Thông báo</h1>
-          <p className="text-sm text-slate-400">Đăng thông báo cho học sinh, có thể đính kèm ảnh hoặc công văn.</p>
         </div>
         <button className="btn-primary" onClick={() => setOpen(true)}>
           <Plus size={18} /> Đăng thông báo

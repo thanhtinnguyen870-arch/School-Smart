@@ -83,7 +83,6 @@ export default function CreateTest() {
     <form onSubmit={save} noValidate className="card grid gap-4">
       <div>
         <h1 className="text-2xl font-black">Tạo bài kiểm tra</h1>
-        <p className="mt-1 text-sm text-slate-400">Có thể upload file Word, hoặc nhập câu trắc nghiệm/tự luận kèm ảnh minh họa.</p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">

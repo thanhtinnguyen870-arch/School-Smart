@@ -31,9 +31,6 @@ export default function Login() {
             <Sparkles size={17} /> EdTech SaaS Dashboard
           </div>
           <h1 className="mt-8 text-5xl font-black leading-tight text-white">SMART SCHOOL AI</h1>
-          <p className="mt-4 text-base font-medium text-white/82">
-            Quản lý học sinh, lớp học, điểm số và điểm danh khuôn mặt trong một giao diện rực rỡ, hiện đại.
-          </p>
           <div className="mt-10 grid gap-3">
             {["Điểm danh AI theo lớp", "Bảng điểm theo môn", "Bài tập, kiểm tra và thông báo"].map((item) => (
               <div key={item} className="flex items-center gap-3 rounded-2xl bg-white/16 p-3 font-bold">
@@ -49,7 +46,6 @@ export default function Login() {
               <Camera />
             </div>
             <h2 className="text-3xl font-black text-slate-950">Đăng nhập</h2>
-            <p className="mt-2 text-sm font-medium text-slate-500">Chào mừng bạn quay lại SMART SCHOOL AI</p>
           </div>
 
           <label className="mb-4 block text-sm font-black text-slate-700">

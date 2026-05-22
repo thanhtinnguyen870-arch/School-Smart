@@ -41,7 +41,6 @@ export default function AssignmentManagement() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-black">Bài tập</h1>
-          <p className="text-sm text-slate-400">Tạo bài tự luận và đính kèm ảnh, Word, PDF hoặc Excel cho học sinh.</p>
         </div>
         <button onClick={() => setOpen(true)} className="btn-primary">
           <Plus size={18} /> Tạo bài tập

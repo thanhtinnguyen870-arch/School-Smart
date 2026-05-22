@@ -9,7 +9,7 @@ const tones = {
   rose: "from-pink-500 via-rose-500 to-orange-400"
 };
 
-export default function StatCard({ title, value, icon: Icon, tone = "cyan", subtitle }) {
+export default function StatCard({ title, value, icon: Icon, tone = "cyan" }) {
   const gradient = tones[tone] || tones.cyan;
 
   return (
@@ -27,7 +27,6 @@ export default function StatCard({ title, value, icon: Icon, tone = "cyan", subt
         <div className="min-w-0">
           <p className="text-sm font-bold text-white/86">{title}</p>
           <p className="mt-3 text-4xl font-black tracking-normal text-white">{value}</p>
-          {subtitle && <p className="mt-2 text-xs font-semibold text-white/78">{subtitle}</p>}
         </div>
         {Icon && (
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20 shadow-lg backdrop-blur">

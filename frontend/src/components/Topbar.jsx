@@ -3,25 +3,25 @@ import { Bell, CalendarDays, Clock3, ShieldCheck, Sparkles } from "lucide-react"
 import { useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 
-const pageMeta = {
-  "/admin/dashboard": ["Dashboard", "Tổng quan vận hành trường học thông minh"],
-  "/admin/face-enrollment": ["Đăng ký khuôn mặt", "Chuẩn hóa dữ liệu FaceID cho học sinh"],
-  "/admin/attendance": ["Điểm danh AI", "Quét khuôn mặt theo lớp nhanh và chính xác"],
-  "/admin/students": ["Học sinh", "Quản lý hồ sơ và tài khoản đăng nhập"],
-  "/admin/classes": ["Lớp học", "Tổ chức lớp, sĩ số và giáo viên chủ nhiệm"],
-  "/admin/grades": ["Điểm số", "Nhập, cập nhật và theo dõi điểm theo môn"],
-  "/admin/assignments": ["Bài tập", "Giao bài và quản lý nộp bài"],
-  "/admin/tests": ["Bài kiểm tra", "Tạo đề, chấm điểm và xem kết quả"],
-  "/admin/reports": ["Thống kê", "Báo cáo học tập và điểm danh"],
-  "/admin/notifications": ["Thông báo", "Tin tức, công văn và ảnh thông báo"],
-  "/admin/settings": ["Cài đặt", "Thiết lập tài khoản và hệ thống"],
-  "/student/dashboard": ["Trang chủ", "Không gian học tập cá nhân"],
-  "/student/profile": ["Cá nhân", "Thông tin học sinh"],
-  "/student/grades": ["Điểm của tôi", "Xem điểm theo từng môn học"],
-  "/student/attendance": ["Lịch sử điểm danh", "Theo dõi chuyên cần"],
-  "/student/assignments": ["Bài tập", "Bài tập được giao và trạng thái nộp"],
-  "/student/tests": ["Bài kiểm tra", "Danh sách bài kiểm tra đang mở"],
-  "/student/notifications": ["Thông báo", "Cập nhật mới từ giáo viên"]
+const pageTitles = {
+  "/admin/dashboard": "Dashboard",
+  "/admin/face-enrollment": "Đăng ký khuôn mặt",
+  "/admin/attendance": "Điểm danh AI",
+  "/admin/students": "Học sinh",
+  "/admin/classes": "Lớp học",
+  "/admin/grades": "Điểm số",
+  "/admin/assignments": "Bài tập",
+  "/admin/tests": "Bài kiểm tra",
+  "/admin/reports": "Thống kê",
+  "/admin/notifications": "Thông báo",
+  "/admin/settings": "Cài đặt",
+  "/student/dashboard": "Trang chủ",
+  "/student/profile": "Cá nhân",
+  "/student/grades": "Điểm của tôi",
+  "/student/attendance": "Lịch sử điểm danh",
+  "/student/assignments": "Bài tập",
+  "/student/tests": "Bài kiểm tra",
+  "/student/notifications": "Thông báo"
 };
 
 export default function Topbar() {
@@ -34,11 +34,11 @@ export default function Topbar() {
     return () => clearInterval(timer);
   }, []);
 
-  const [title, description] = useMemo(() => {
-    const exact = pageMeta[location.pathname];
+  const title = useMemo(() => {
+    const exact = pageTitles[location.pathname];
     if (exact) return exact;
-    const key = Object.keys(pageMeta).find((path) => location.pathname.startsWith(path));
-    return key ? pageMeta[key] : ["SMART SCHOOL AI", "Bảng điều khiển quản lý học sinh"];
+    const key = Object.keys(pageTitles).find((path) => location.pathname.startsWith(path));
+    return key ? pageTitles[key] : "SMART SCHOOL AI";
   }, [location.pathname]);
 
   return (
@@ -48,10 +48,7 @@ export default function Topbar() {
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-sky-400 via-blue-600 to-violet-600 text-white shadow-neon">
             <Sparkles size={22} />
           </div>
-          <div>
-            <h1 className="text-xl font-black text-slate-950 lg:text-2xl">{title}</h1>
-            <p className="text-sm font-medium text-slate-500">{description}</p>
-          </div>
+          <h1 className="text-xl font-black text-slate-950 lg:text-2xl">{title}</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
