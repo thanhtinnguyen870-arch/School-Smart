@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Eye, FileText, Image, Plus, Trash2 } from "lucide-react";
+import { FileText, Image, Plus, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
 import axiosClient from "../../api/axiosClient";
 import DataTable from "../../components/DataTable";
@@ -11,7 +11,7 @@ const formatDateTime = (value) =>
   value
     ? new Intl.DateTimeFormat("vi-VN", {
         dateStyle: "short",
-        timeStyle: "short",
+        timeStyle: "short"
       }).format(new Date(value))
     : "-";
 
@@ -33,7 +33,7 @@ export default function Notifications() {
     event.preventDefault();
     try {
       await axiosClient.post("/notifications", new FormData(event.currentTarget), {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": "multipart/form-data" }
       });
       toast.success("Đã đăng thông báo.");
       setOpen(false);
@@ -44,8 +44,7 @@ export default function Notifications() {
   };
 
   const remove = async (item) => {
-    const ok = window.confirm(`Xóa thông báo "${item.title}"?`);
-    if (!ok) return;
+    if (!window.confirm(`Xóa thông báo "${item.title}"?`)) return;
 
     try {
       await axiosClient.delete(`/notifications/${item._id}`);
@@ -59,9 +58,7 @@ export default function Notifications() {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-black">Thông báo</h1>
-        </div>
+        <h1 className="text-2xl font-black text-slate-950">Thông báo</h1>
         <button className="btn-primary" onClick={() => setOpen(true)}>
           <Plus size={18} /> Đăng thông báo
         </button>
@@ -71,7 +68,19 @@ export default function Notifications() {
         data={items}
         searchKey="title"
         columns={[
-          { key: "title", label: "Tiêu đề" },
+          {
+            key: "title",
+            label: "Tiêu đề",
+            render: (row) => (
+              <button
+                type="button"
+                className="text-left font-black text-slate-900 underline-offset-4 transition hover:text-ocean hover:underline"
+                onClick={() => setPreview(row)}
+              >
+                {row.title}
+              </button>
+            )
+          },
           { key: "receiverRole", label: "Người nhận", render: (row) => row.receiverRole === "student" ? "Học sinh" : row.receiverRole || "Tất cả" },
           { key: "createdBy", label: "Người đăng", render: (row) => row.createdBy?.name || "-" },
           { key: "createdAt", label: "Ngày giờ", render: (row) => formatDateTime(row.createdAt) },
@@ -83,33 +92,28 @@ export default function Notifications() {
                 {isImageAttachment(row) ? <Image size={15} /> : <FileText size={15} />}
                 {isImageAttachment(row) ? "Ảnh" : "Công văn"}
               </span>
-            ) : "-",
-          },
+            ) : "-"
+          }
         ]}
         actions={(row) => (
-          <div className="flex gap-2">
-            <button className="text-cyan" title="Xem thông báo" onClick={() => setPreview(row)}>
-              <Eye size={17} />
-            </button>
-            <button className="text-rose" title="Xóa thông báo" onClick={() => remove(row)}>
-              <Trash2 size={17} />
-            </button>
-          </div>
+          <button className="inline-flex items-center gap-1 text-rose" title="Xóa thông báo" onClick={() => remove(row)}>
+            <Trash2 size={17} /> Xóa
+          </button>
         )}
       />
 
       <Modal open={open} title="Đăng thông báo" onClose={() => setOpen(false)}>
         <form onSubmit={save} className="grid gap-3">
           <input type="hidden" name="receiverRole" value="student" />
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             Tiêu đề
             <input name="title" className="input" placeholder="Tiêu đề thông báo" required />
           </label>
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             Nội dung
             <textarea name="content" className="input min-h-32" placeholder="Nội dung thông báo" required />
           </label>
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             Ảnh thông báo / công văn
             <input type="file" name="file" className="input" accept=".png,.jpg,.jpeg,.webp,.pdf,.doc,.docx,.xls,.xlsx" />
           </label>
@@ -119,18 +123,18 @@ export default function Notifications() {
 
       <Modal open={Boolean(preview)} title={preview?.title || "Chi tiết thông báo"} onClose={() => setPreview(null)}>
         {preview && (
-          <div className="space-y-4 text-sm text-slate-300">
-            <div className="grid gap-2 rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-              <p><span className="text-slate-500">Ngày giờ:</span> {formatDateTime(preview.createdAt)}</p>
-              <p><span className="text-slate-500">Người đăng:</span> {preview.createdBy?.name || "-"}</p>
+          <div className="space-y-4 text-sm font-medium text-slate-700">
+            <div className="grid gap-2 rounded-2xl border border-sky-100 bg-sky-50 p-3">
+              <p><span className="font-black text-slate-900">Ngày giờ:</span> {formatDateTime(preview.createdAt)}</p>
+              <p><span className="font-black text-slate-900">Người đăng:</span> {preview.createdBy?.name || "-"}</p>
             </div>
-            <p className="whitespace-pre-line leading-7">{preview.content}</p>
+            <p className="whitespace-pre-line leading-7 text-slate-800">{preview.content}</p>
             {preview.attachmentUrl && (
-              <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+              <div className="rounded-2xl border border-slate-200 bg-white p-3">
                 {isImageAttachment(preview) ? (
-                  <img src={attachmentUrl(preview)} alt={preview.attachmentName || preview.title} className="max-h-[420px] w-full rounded-lg object-contain" />
+                  <img src={attachmentUrl(preview)} alt={preview.attachmentName || preview.title} className="max-h-[420px] w-full rounded-xl object-contain" />
                 ) : (
-                  <a className="inline-flex items-center gap-2 text-cyan" href={attachmentUrl(preview)} target="_blank" rel="noreferrer">
+                  <a className="inline-flex items-center gap-2 font-bold text-cyan" href={attachmentUrl(preview)} target="_blank" rel="noreferrer">
                     <FileText size={18} /> Xem công văn: {preview.attachmentName || "Tệp đính kèm"}
                   </a>
                 )}

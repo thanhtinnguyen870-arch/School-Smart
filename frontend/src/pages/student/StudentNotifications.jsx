@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Eye, FileText, Image } from "lucide-react";
+import { FileText, Image } from "lucide-react";
 import axiosClient from "../../api/axiosClient";
 import DataTable from "../../components/DataTable";
 import Modal from "../../components/Modal";
@@ -10,7 +10,7 @@ const formatDateTime = (value) =>
   value
     ? new Intl.DateTimeFormat("vi-VN", {
         dateStyle: "short",
-        timeStyle: "short",
+        timeStyle: "short"
       }).format(new Date(value))
     : "-";
 
@@ -38,12 +38,25 @@ export default function StudentNotifications() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-black">Thông báo</h1>
+      <h1 className="text-2xl font-black text-slate-950">Thông báo</h1>
+
       <DataTable
         data={rows}
         searchKey="title"
         columns={[
-          { key: "title", label: "Tiêu đề" },
+          {
+            key: "title",
+            label: "Tiêu đề",
+            render: (row) => (
+              <button
+                type="button"
+                className={`text-left font-black underline-offset-4 transition hover:text-ocean hover:underline ${row.isRead ? "text-slate-700" : "text-slate-950"}`}
+                onClick={() => openNotification(row)}
+              >
+                {row.title}
+              </button>
+            )
+          },
           { key: "createdBy", label: "Người đăng", render: (row) => row.createdBy?.name || "-" },
           { key: "createdAt", label: "Ngày giờ", render: (row) => formatDateTime(row.createdAt) },
           {
@@ -54,30 +67,25 @@ export default function StudentNotifications() {
                 {isImageAttachment(row) ? <Image size={15} /> : <FileText size={15} />}
                 {isImageAttachment(row) ? "Ảnh" : "Công văn"}
               </span>
-            ) : "-",
-          },
+            ) : "-"
+          }
         ]}
-        actions={(row) => (
-          <button className="inline-flex items-center gap-1 text-cyan" onClick={() => openNotification(row)}>
-            <Eye size={15} /> Xem
-          </button>
-        )}
       />
 
       <Modal open={Boolean(selected)} title={selected?.title || "Chi tiết thông báo"} onClose={() => setSelected(null)}>
         {selected && (
-          <div className="space-y-4 text-sm text-slate-300">
-            <div className="grid gap-2 rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-              <p><span className="text-slate-500">Ngày giờ:</span> {formatDateTime(selected.createdAt)}</p>
-              <p><span className="text-slate-500">Người đăng:</span> {selected.createdBy?.name || "-"}</p>
+          <div className="space-y-4 text-sm font-medium text-slate-700">
+            <div className="grid gap-2 rounded-2xl border border-sky-100 bg-sky-50 p-3">
+              <p><span className="font-black text-slate-900">Ngày giờ:</span> {formatDateTime(selected.createdAt)}</p>
+              <p><span className="font-black text-slate-900">Người đăng:</span> {selected.createdBy?.name || "-"}</p>
             </div>
-            <p className="whitespace-pre-line leading-7">{selected.content}</p>
+            <p className="whitespace-pre-line leading-7 text-slate-800">{selected.content}</p>
             {selected.attachmentUrl && (
-              <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+              <div className="rounded-2xl border border-slate-200 bg-white p-3">
                 {isImageAttachment(selected) ? (
-                  <img src={attachmentUrl(selected)} alt={selected.attachmentName || selected.title} className="max-h-[420px] w-full rounded-lg object-contain" />
+                  <img src={attachmentUrl(selected)} alt={selected.attachmentName || selected.title} className="max-h-[420px] w-full rounded-xl object-contain" />
                 ) : (
-                  <a className="inline-flex items-center gap-2 text-cyan" href={attachmentUrl(selected)} target="_blank" rel="noreferrer">
+                  <a className="inline-flex items-center gap-2 font-bold text-cyan" href={attachmentUrl(selected)} target="_blank" rel="noreferrer">
                     <FileText size={18} /> Xem công văn: {selected.attachmentName || "Tệp đính kèm"}
                   </a>
                 )}
