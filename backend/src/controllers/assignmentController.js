@@ -10,7 +10,13 @@ const filePayload = (file) =>
       }
     : {};
 
-export const listAssignments = async (req, res) => res.json(await Assignment.find().populate("classId createdBy", "className name").sort("-createdAt"));
+export const listAssignments = async (req, res) => {
+  const filter = {
+    ...(req.query.classId ? { classId: req.query.classId } : {}),
+    ...(req.query.subject ? { subject: req.query.subject } : {})
+  };
+  res.json(await Assignment.find(filter).populate("classId createdBy", "className name").sort("-createdAt"));
+};
 export const getAssignment = async (req, res) => res.json(await Assignment.findById(req.params.id).populate("classId createdBy", "className name"));
 export const createAssignment = async (req, res) => res.status(201).json(await Assignment.create({ ...req.body, ...filePayload(req.file), createdBy: req.user._id }));
 export const updateAssignment = async (req, res) => res.json(await Assignment.findByIdAndUpdate(req.params.id, { ...req.body, ...filePayload(req.file) }, { new: true }));

@@ -1,6 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
+const valueByPath = (row, key) => {
+  if (!key) return "";
+  return key.split(".").reduce((value, part) => value?.[part], row) ?? "";
+};
+
 export default function DataTable({ columns, data = [], searchKey, filters, actions, searchPlaceholder = "Tìm kiếm..." }) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -8,7 +13,11 @@ export default function DataTable({ columns, data = [], searchKey, filters, acti
 
   const filtered = useMemo(() => {
     const query = search.toLowerCase();
-    return data.filter((row) => !query || String(row[searchKey] || row.fullName || row.title || "").toLowerCase().includes(query));
+    return data.filter((row) => {
+      const primary = valueByPath(row, searchKey);
+      const fallback = row.fullName || row.title || row.subject || row.studentId?.fullName || "";
+      return !query || String(primary || fallback).toLowerCase().includes(query);
+    });
   }, [data, search, searchKey]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -50,7 +59,7 @@ export default function DataTable({ columns, data = [], searchKey, filters, acti
               <tr key={row._id || row.id} className="border-b border-slate-100 transition duration-200 last:border-b-0 hover:bg-sky-50/80">
                 {columns.map((column) => (
                   <td key={column.key} className="px-4 py-3.5 font-medium text-slate-700">
-                    {column.render ? column.render(row) : row[column.key]}
+                    {column.render ? column.render(row) : valueByPath(row, column.key)}
                   </td>
                 ))}
                 {actions && <td className="px-4 py-3.5">{actions(row)}</td>}

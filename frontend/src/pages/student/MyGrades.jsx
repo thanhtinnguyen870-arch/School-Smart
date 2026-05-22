@@ -3,20 +3,23 @@ import axiosClient from "../../api/axiosClient";
 import DataTable from "../../components/DataTable";
 import { useAuthStore } from "../../store/authStore";
 
-const defaultSubjects = ["Toán", "Ngữ văn", "Vật Lý", "Hóa Học", "Tiếng Anh", "Sinh Học"];
+const subjects = ["Toán", "Ngữ Văn", "Vật Lý", "Hóa Học", "Tiếng Anh", "Sinh Học"];
 
 export default function MyGrades() {
   const user = useAuthStore((state) => state.user);
   const [rows, setRows] = useState([]);
+  const [student, setStudent] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState("");
 
   useEffect(() => {
-    if (user?.studentId) axiosClient.get(`/grades/student/${user.studentId}`).then(setRows);
-  }, [user]);
+    if (!user?.studentId) return;
+    axiosClient.get(`/grades/student/${user.studentId}`).then((data) => setRows(data || []));
+    axiosClient.get(`/students/${user.studentId}`).then(setStudent);
+  }, [user?.studentId]);
 
   const subjectOptions = useMemo(() => {
     const savedSubjects = rows.map((row) => row.subject).filter(Boolean);
-    return [...new Set([...defaultSubjects, ...savedSubjects])];
+    return [...new Set([...subjects, ...savedSubjects])];
   }, [rows]);
 
   const selectedRows = useMemo(
@@ -28,35 +31,36 @@ export default function MyGrades() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-black">Điểm của tôi</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-black">Điểm của tôi</h1>
+        <span className="badge badge-info">{student?.classId?.className || "Lớp của tôi"}</span>
+      </div>
 
-      <div className="card">
-        <label className="grid max-w-md gap-2 text-sm font-semibold text-slate-700">
+      <section className="soft-panel p-4">
+        <label className="grid max-w-md gap-2 text-sm font-black text-slate-700">
           Môn học
           <select className="input" value={selectedSubject} onChange={(event) => setSelectedSubject(event.target.value)}>
             <option value="">Chọn môn</option>
             {subjectOptions.map((subject) => (
-              <option key={subject} value={subject}>
-                {subject}
-              </option>
+              <option key={subject} value={subject}>{subject}</option>
             ))}
           </select>
         </label>
-      </div>
+      </section>
 
       {selectedSubject ? (
         <>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="card">
-              <p className="text-sm text-slate-400">Môn học</p>
-              <p className="mt-2 text-2xl font-black text-white">{selectedSubject}</p>
+              <p className="text-sm font-bold text-slate-500">Môn học</p>
+              <p className="mt-2 text-2xl font-black text-slate-900">{selectedSubject}</p>
             </div>
             <div className="card">
-              <p className="text-sm text-slate-400">Điểm trung bình</p>
+              <p className="text-sm font-bold text-slate-500">Điểm trung bình</p>
               <p className="mt-2 text-2xl font-black text-mint">{latestGrade?.averageScore ?? "-"}</p>
             </div>
             <div className="card">
-              <p className="text-sm text-slate-400">Số bảng điểm</p>
+              <p className="text-sm font-bold text-slate-500">Số bảng điểm</p>
               <p className="mt-2 text-2xl font-black text-cyan">{selectedRows.length}</p>
             </div>
           </div>
@@ -76,7 +80,7 @@ export default function MyGrades() {
           />
         </>
       ) : (
-        <div className="card text-sm text-slate-500">Chọn môn</div>
+        <div className="soft-panel p-6 text-sm font-semibold text-slate-500">Chọn môn học để xem điểm.</div>
       )}
     </div>
   );

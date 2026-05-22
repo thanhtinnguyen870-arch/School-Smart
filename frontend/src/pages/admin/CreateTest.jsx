@@ -4,9 +4,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import axiosClient from "../../api/axiosClient";
 
+const subjects = ["Toán", "Ngữ Văn", "Vật Lý", "Hóa Học", "Tiếng Anh", "Sinh Học"];
+
 export default function CreateTest() {
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [useWordFile, setUseWordFile] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ export default function CreateTest() {
       const nextClasses = rows || [];
       setClasses(nextClasses);
       setSelectedClassId(searchParams.get("classId") || nextClasses[0]?._id || "");
+      setSelectedSubject(searchParams.get("subject") || "");
     });
   }, [searchParams]);
 
@@ -25,11 +29,11 @@ export default function CreateTest() {
     if (submitting) return;
 
     const formData = new FormData(event.currentTarget);
-    if (!selectedClassId) {
-      toast.warning("Vui lòng chọn lớp trước.");
-      return;
-    }
+    if (!selectedClassId) return toast.warning("Vui lòng chọn lớp trước.");
+    if (!selectedSubject) return toast.warning("Vui lòng chọn môn học trước.");
+
     formData.set("classId", selectedClassId);
+    formData.set("subject", selectedSubject);
     const file = formData.get("file");
     const hasFile = file && file.name;
 
@@ -37,15 +41,8 @@ export default function CreateTest() {
       formData.set("title", file.name.replace(/\.[^.]+$/, ""));
     }
 
-    if (!formData.get("title")) {
-      toast.warning("Vui lòng nhập tên bài kiểm tra hoặc chọn file Word.");
-      return;
-    }
-
-    if (useWordFile && !hasFile) {
-      toast.warning("Vui lòng chọn file Word chứa câu hỏi trắc nghiệm.");
-      return;
-    }
+    if (!formData.get("title")) return toast.warning("Vui lòng nhập tên bài kiểm tra hoặc chọn file Word.");
+    if (useWordFile && !hasFile) return toast.warning("Vui lòng chọn file Word chứa câu hỏi trắc nghiệm.");
 
     if (!useWordFile) {
       const q1Image = formData.get("q1Image");
@@ -57,20 +54,17 @@ export default function CreateTest() {
           options: ["A", "B", "C", "D"].map((option) => `${option}. ${formData.get(option.toLowerCase()) || ""}`),
           correctAnswer: formData.get("correct"),
           score: Number(formData.get("q1Score")) || 5,
-          imageField: q1Image?.name ? "q1Image" : undefined,
+          imageField: q1Image?.name ? "q1Image" : undefined
         },
         {
           questionText: formData.get("q2"),
           type: "essay",
           score: Number(formData.get("q2Score")) || 5,
-          imageField: q2Image?.name ? "q2Image" : undefined,
-        },
+          imageField: q2Image?.name ? "q2Image" : undefined
+        }
       ].filter((question) => question.questionText);
 
-      if (!questions.length) {
-        toast.warning("Vui lòng nhập ít nhất một câu hỏi trắc nghiệm hoặc tự luận.");
-        return;
-      }
+      if (!questions.length) return toast.warning("Vui lòng nhập ít nhất một câu hỏi trắc nghiệm hoặc tự luận.");
 
       formData.set("questions", JSON.stringify(questions));
       ["q1", "a", "b", "c", "d", "correct", "q1Score", "q2", "q2Score", "file"].forEach((field) => formData.delete(field));
@@ -78,9 +72,7 @@ export default function CreateTest() {
 
     try {
       setSubmitting(true);
-      await axiosClient.post("/tests", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axiosClient.post("/tests", formData, { headers: { "Content-Type": "multipart/form-data" } });
       toast.success(useWordFile ? "Đã tạo bài kiểm tra từ file Word." : "Đã tạo bài kiểm tra.");
       navigate("/admin/tests");
     } catch (error) {
@@ -92,89 +84,89 @@ export default function CreateTest() {
 
   return (
     <form onSubmit={save} noValidate className="card grid gap-4">
-      <div>
-        <h1 className="text-2xl font-black">Tạo bài kiểm tra</h1>
-      </div>
+      <h1 className="text-2xl font-black">Tạo bài kiểm tra</h1>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
-          Tên bài kiểm tra
-          <input name="title" className="input" placeholder="Nếu bỏ trống, hệ thống sẽ lấy tên file Word" />
-        </label>
-
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
-          Môn học
-          <input name="subject" className="input" placeholder="Ví dụ: Vật lý" />
-        </label>
-
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
           Lớp học
-          <select name="classId" className="input" value={selectedClassId} onChange={(event) => setSelectedClassId(event.target.value)} required>
+          <select
+            name="classId"
+            className="input"
+            value={selectedClassId}
+            onChange={(event) => {
+              setSelectedClassId(event.target.value);
+              setSelectedSubject("");
+            }}
+            required
+          >
             <option value="">Chọn lớp học</option>
             {classes.map((classItem) => (
               <option key={classItem._id} value={classItem._id}>
-                {classItem.className}
+                {classItem.className} - {classItem.classCode}
               </option>
             ))}
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
+          Môn học
+          <select className="input" value={selectedSubject} onChange={(event) => setSelectedSubject(event.target.value)} disabled={!selectedClassId} required>
+            <option value="">Chọn môn học</option>
+            {subjects.map((subject) => (
+              <option key={subject} value={subject}>{subject}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="grid gap-2 text-sm font-black text-slate-700">
+          Tên bài kiểm tra
+          <input name="title" className="input" placeholder="Có thể bỏ trống nếu dùng file Word" />
+        </label>
+
+        <label className="grid gap-2 text-sm font-black text-slate-700">
           Thời gian làm bài
           <input name="duration" type="number" min="1" className="input" placeholder="Số phút" />
         </label>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
           Thời gian mở
           <input name="startTime" type="datetime-local" className="input" />
         </label>
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
           Thời gian đóng
           <input name="endTime" type="datetime-local" className="input" />
         </label>
       </div>
 
-      <label className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-300">
+      <label className="flex items-center gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm font-bold text-sky-800">
         <input type="checkbox" checked={useWordFile} onChange={(event) => setUseWordFile(event.target.checked)} />
         Tạo câu hỏi tự động từ file Word
       </label>
 
       {useWordFile ? (
-        <div className="grid gap-3 rounded-xl border border-cyan/30 bg-cyan/10 p-4">
-          <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <div className="grid gap-3 rounded-2xl border border-cyan/30 bg-cyan/10 p-4">
+          <label className="grid gap-2 text-sm font-black text-slate-700">
             File Word trắc nghiệm
             <input name="file" type="file" accept=".docx" className="input" />
           </label>
-          <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-sm text-slate-400">
-            <p className="mb-2 font-semibold text-slate-200">Định dạng hỗ trợ:</p>
-            <pre className="whitespace-pre-wrap font-sans">{`Câu 1: Nội dung câu hỏi
-A. Đáp án A
-B. Đáp án B
-C. Đáp án C
-D. Đáp án D
-
-Bảng đáp án cuối file:
-Câu      1   2
-Đáp án   A   C`}</pre>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-cyan">
-            <UploadCloud size={18} /> Hệ thống sẽ đọc file và sinh danh sách câu trắc nghiệm cho học sinh làm.
+          <div className="flex items-center gap-2 text-sm font-bold text-cyan">
+            <UploadCloud size={18} /> Hệ thống sẽ đọc file và sinh danh sách câu hỏi cho học sinh làm.
           </div>
         </div>
       ) : (
         <div className="grid gap-4">
-          <section className="grid gap-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-            <h2 className="font-bold">Câu hỏi trắc nghiệm</h2>
-            <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <section className="grid gap-3 rounded-2xl border border-sky-100 bg-white p-4 shadow-soft">
+            <h2 className="font-black text-slate-900">Câu hỏi trắc nghiệm</h2>
+            <label className="grid gap-2 text-sm font-black text-slate-700">
               Nội dung câu hỏi
               <input name="q1" className="input" placeholder="Nhập nội dung câu hỏi trắc nghiệm" />
             </label>
 
             <div className="grid gap-2 md:grid-cols-4">
               {["A", "B", "C", "D"].map((option) => (
-                <label key={option} className="grid gap-2 text-sm font-semibold text-slate-300">
+                <label key={option} className="grid gap-2 text-sm font-black text-slate-700">
                   Đáp án {option}
                   <input name={option.toLowerCase()} className="input" placeholder={`Đáp án ${option}`} />
                 </label>
@@ -182,15 +174,15 @@ Câu      1   2
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">
-              <label className="grid gap-2 text-sm font-semibold text-slate-300">
+              <label className="grid gap-2 text-sm font-black text-slate-700">
                 Đáp án đúng
-                <input name="correct" className="input" placeholder="Nhập A, B, C hoặc D" />
+                <input name="correct" className="input" placeholder="A, B, C hoặc D" />
               </label>
-              <label className="grid gap-2 text-sm font-semibold text-slate-300">
+              <label className="grid gap-2 text-sm font-black text-slate-700">
                 Điểm
                 <input name="q1Score" type="number" min="0.1" step="0.1" className="input" defaultValue="5" />
               </label>
-              <label className="grid gap-2 text-sm font-semibold text-slate-300">
+              <label className="grid gap-2 text-sm font-black text-slate-700">
                 Ảnh minh họa
                 <span className="input flex items-center gap-2">
                   <ImagePlus size={16} />
@@ -200,18 +192,18 @@ Câu      1   2
             </div>
           </section>
 
-          <section className="grid gap-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-            <h2 className="font-bold">Câu hỏi tự luận</h2>
-            <label className="grid gap-2 text-sm font-semibold text-slate-300">
+          <section className="grid gap-3 rounded-2xl border border-fuchsia-100 bg-white p-4 shadow-soft">
+            <h2 className="font-black text-slate-900">Câu hỏi tự luận</h2>
+            <label className="grid gap-2 text-sm font-black text-slate-700">
               Nội dung câu hỏi
               <textarea name="q2" className="input min-h-28" placeholder="Nhập nội dung câu hỏi tự luận" />
             </label>
             <div className="grid gap-3 md:grid-cols-2">
-              <label className="grid gap-2 text-sm font-semibold text-slate-300">
+              <label className="grid gap-2 text-sm font-black text-slate-700">
                 Điểm
                 <input name="q2Score" type="number" min="0.1" step="0.1" className="input" defaultValue="5" />
               </label>
-              <label className="grid gap-2 text-sm font-semibold text-slate-300">
+              <label className="grid gap-2 text-sm font-black text-slate-700">
                 Ảnh minh họa
                 <span className="input flex items-center gap-2">
                   <ImagePlus size={16} />
@@ -223,7 +215,7 @@ Câu      1   2
         </div>
       )}
 
-      <button type="submit" className="btn-primary" disabled={submitting || !selectedClassId}>
+      <button type="submit" className="btn-primary" disabled={submitting || !selectedClassId || !selectedSubject}>
         {submitting ? "Đang tạo..." : "Tạo bài kiểm tra"}
       </button>
     </form>

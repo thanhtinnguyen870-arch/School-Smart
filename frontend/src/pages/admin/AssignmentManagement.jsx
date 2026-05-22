@@ -12,9 +12,11 @@ export default function AssignmentManagement() {
   const [items, setItems] = useState([]);
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("");
   const [open, setOpen] = useState(false);
 
   const selectedClass = useMemo(() => classes.find((item) => item._id === selectedClassId), [classes, selectedClassId]);
+  const canWork = Boolean(selectedClassId && selectedSubject);
 
   const load = async () => {
     const [assignmentRows, classRows] = await Promise.all([axiosClient.get("/assignments"), axiosClient.get("/classes")]);
@@ -29,16 +31,28 @@ export default function AssignmentManagement() {
   }, []);
 
   const filteredItems = useMemo(
-    () => items.filter((item) => (item.classId?._id || item.classId) === selectedClassId),
-    [items, selectedClassId]
+    () =>
+      items.filter(
+        (item) =>
+          (item.classId?._id || item.classId) === selectedClassId &&
+          (!selectedSubject || item.subject === selectedSubject)
+      ),
+    [items, selectedClassId, selectedSubject]
   );
+
+  const openCreateModal = () => {
+    if (!selectedClassId) return toast.warning("Vui lòng chọn lớp trước.");
+    if (!selectedSubject) return toast.warning("Vui lòng chọn môn học trước.");
+    setOpen(true);
+  };
 
   const save = async (event) => {
     event.preventDefault();
-    if (!selectedClassId) return toast.warning("Vui lòng chọn lớp.");
+    if (!canWork) return toast.warning("Vui lòng chọn lớp và môn học.");
 
     const formData = new FormData(event.currentTarget);
     formData.set("classId", selectedClassId);
+    formData.set("subject", selectedSubject);
 
     try {
       await axiosClient.post("/assignments", formData, { headers: { "Content-Type": "multipart/form-data" } });
@@ -54,57 +68,72 @@ export default function AssignmentManagement() {
     <div className="page-shell">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-black">Bài tập</h1>
-        <button onClick={() => selectedClassId ? setOpen(true) : toast.warning("Vui lòng chọn lớp trước.")} className="btn-primary" disabled={!selectedClassId}>
+        <button onClick={openCreateModal} className="btn-primary" disabled={!canWork}>
           <Plus size={18} /> Tạo bài tập
         </button>
       </div>
 
-      <section className="soft-panel grid gap-4 p-4 lg:grid-cols-[1fr_auto] lg:items-end">
+      <section className="soft-panel grid gap-4 p-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
         <label className="grid gap-2 text-sm font-black text-slate-700">
           Lớp học
-          <select className="input" value={selectedClassId} onChange={(event) => setSelectedClassId(event.target.value)}>
+          <select
+            className="input"
+            value={selectedClassId}
+            onChange={(event) => {
+              setSelectedClassId(event.target.value);
+              setSelectedSubject("");
+            }}
+          >
             <option value="">Chọn lớp</option>
             {classes.map((classItem) => (
-              <option key={classItem._id} value={classItem._id}>{classItem.className} - {classItem.classCode}</option>
+              <option key={classItem._id} value={classItem._id}>
+                {classItem.className} - {classItem.classCode}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-2 text-sm font-black text-slate-700">
+          Môn học
+          <select className="input" value={selectedSubject} onChange={(event) => setSelectedSubject(event.target.value)} disabled={!selectedClassId}>
+            <option value="">Chọn môn</option>
+            {subjects.map((subject) => (
+              <option key={subject} value={subject}>{subject}</option>
             ))}
           </select>
         </label>
         <span className="badge badge-info">{selectedClass ? selectedClass.className : "Chưa chọn lớp"}</span>
       </section>
 
-      <DataTable
-        data={filteredItems}
-        searchKey="title"
-        columns={[
-          { key: "title", label: "Tiêu đề" },
-          { key: "subject", label: "Môn học" },
-          { key: "deadline", label: "Hạn nộp", render: (row) => row.deadline?.slice(0, 10) || "-" },
-          {
-            key: "file",
-            label: "Đính kèm",
-            render: (row) => row.fileUrl ? (
-              <span className="inline-flex items-center gap-1 text-cyan">
-                {isImageFile(row) ? <Image size={15} /> : <FileText size={15} />}
-                {isImageFile(row) ? "Ảnh" : "Tệp"}
-              </span>
-            ) : "-"
-          },
-          { key: "status", label: "Trạng thái" }
-        ]}
-      />
+      {canWork ? (
+        <DataTable
+          data={filteredItems}
+          searchKey="title"
+          columns={[
+            { key: "title", label: "Tiêu đề" },
+            { key: "subject", label: "Môn học" },
+            { key: "deadline", label: "Hạn nộp", render: (row) => row.deadline?.slice(0, 10) || "-" },
+            {
+              key: "file",
+              label: "Đính kèm",
+              render: (row) => row.fileUrl ? (
+                <span className="inline-flex items-center gap-1 text-cyan">
+                  {isImageFile(row) ? <Image size={15} /> : <FileText size={15} />}
+                  {isImageFile(row) ? "Ảnh" : "Tệp"}
+                </span>
+              ) : "-"
+            },
+            { key: "status", label: "Trạng thái" }
+          ]}
+        />
+      ) : (
+        <div className="soft-panel p-6 text-sm font-semibold text-slate-500">Chọn lớp và môn học để xem hoặc tạo bài tập.</div>
+      )}
 
       <Modal open={open} title="Tạo bài tập" onClose={() => setOpen(false)}>
         <form onSubmit={save} className="grid gap-3">
           <div className="rounded-2xl bg-sky-50 px-4 py-3 text-sm font-bold text-sky-700">
-            Lớp: {selectedClass?.className || "-"}
+            Lớp: {selectedClass?.className || "-"} · Môn: {selectedSubject || "-"}
           </div>
-          <label className="grid gap-2 text-sm font-black text-slate-700">
-            Môn học
-            <select name="subject" className="input" required>
-              <option value="">Chọn môn</option>
-              {subjects.map((subject) => <option key={subject} value={subject}>{subject}</option>)}
-            </select>
-          </label>
           <label className="grid gap-2 text-sm font-black text-slate-700">
             Tiêu đề
             <input name="title" className="input" placeholder="Tiêu đề bài tập" required />
