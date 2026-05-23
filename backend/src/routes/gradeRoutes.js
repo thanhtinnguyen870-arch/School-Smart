@@ -6,7 +6,7 @@ import { upload } from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 router.use(protect);
-router.get("/", listGrades);
+router.get("/", authorize("admin", "teacher"), listGrades);
 router.post("/", authorize("admin", "teacher"), createGrade);
 router.put("/:id", authorize("admin", "teacher"), updateGrade);
 router.delete("/:id", authorize("admin", "teacher"), deleteGrade);

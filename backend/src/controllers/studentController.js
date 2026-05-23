@@ -23,6 +23,9 @@ export const listStudents = async (req, res) => {
 export const getStudent = async (req, res) => {
   const student = await Student.findById(req.params.id).populate("classId userId", "-password");
   if (!student) return res.status(404).json({ message: "Student not found" });
+  if (req.user.role === "student" && String(student.userId?._id || student.userId) !== String(req.user._id)) {
+    return res.status(403).json({ message: "Forbidden: insufficient role" });
+  }
   res.json(student);
 };
 

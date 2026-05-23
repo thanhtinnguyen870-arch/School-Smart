@@ -5,10 +5,10 @@ import { authorize } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 router.use(protect);
-router.get("/", listClasses);
-router.get("/:id", getClass);
+router.get("/", authorize("admin", "teacher"), listClasses);
+router.get("/:id", authorize("admin", "teacher"), getClass);
 router.post("/", authorize("admin", "teacher"), createClass);
 router.put("/:id", authorize("admin", "teacher"), updateClass);
 router.delete("/:id", authorize("admin", "teacher"), deleteClass);
-router.get("/:id/students", classStudents);
+router.get("/:id/students", authorize("admin", "teacher"), classStudents);
 export default router;

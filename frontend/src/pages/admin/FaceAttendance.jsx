@@ -57,9 +57,17 @@ export default function FaceAttendance() {
   );
 
   const canStartAttendance = selectedClassId && students.length > 0 && unregisteredStudents.length === 0;
-  const cameraLabel = matchingStudent?.fullName
-    || (waitingNext && detected?.fullName)
-    || (facePresent ? "Đã thấy khuôn mặt" : "Đang quét");
+  const cameraLabel = busy
+    ? matchingStudent
+      ? `Đang đối chiếu: ${matchingStudent.fullName}`
+      : "Đang đối chiếu"
+    : waitingNext
+      ? detected?.fullName
+        ? `Đã điểm danh: ${detected.fullName}`
+        : "Đã điểm danh"
+      : facePresent
+        ? "Đã thấy khuôn mặt"
+        : "Đang quét";
 
   const stopScanner = () => {
     clearInterval(timerRef.current);
@@ -152,6 +160,7 @@ export default function FaceAttendance() {
 
   const processDetectedFace = async (descriptor) => {
     if (busyRef.current) return;
+    setMatchingStudent(null);
 
     const pending = buildPendingStudents();
     setScanQueue(pending);
@@ -235,6 +244,7 @@ export default function FaceAttendance() {
     setScanQueue(pending);
     setScanLog([{ id: `ready-${Date.now()}`, name: "Hệ thống", status: `Đang điểm danh lớp ${selectedClass?.className || ""}`, confidence: "--" }]);
     setDetected(null);
+    setMatchingStudent(null);
     setWaitingNext(false);
     setFaceStatus("Đang chờ khuôn mặt vào khung.");
     requireNewFaceRef.current = false;
@@ -340,7 +350,7 @@ export default function FaceAttendance() {
       <div className="card">
         <div className="grid gap-4 lg:grid-cols-[1fr_2fr] lg:items-end">
           <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-slate-300">Lớp điểm danh</span>
+            <span className="mb-2 block text-sm font-black text-slate-700">Lớp điểm danh</span>
             <select className="input" value={selectedClassId} onChange={(e) => setSelectedClassId(e.target.value)} disabled={scanning}>
               <option value="">Chọn lớp</option>
               {classes.map((item) => <option key={item._id} value={item._id}>{item.className} - {item.classCode}</option>)}
@@ -388,20 +398,20 @@ export default function FaceAttendance() {
           <div className="card">
             <h2 className="mb-3 font-bold">Đối chiếu hiện tại</h2>
             {matchingStudent ? (
-              <div className="space-y-3 text-sm text-slate-300">
+              <div className="space-y-3 text-sm font-semibold text-slate-700">
                 <div className="flex items-center gap-3">
                   <img src={matchingStudent.faceImages?.[0]} alt={matchingStudent.fullName} className="h-20 w-20 rounded-xl border border-cyan/40 object-cover shadow-neon" />
                   <div>
-                    <p className="text-xl font-bold text-white">{matchingStudent.fullName}</p>
+                    <p className="text-xl font-black text-slate-950">{matchingStudent.fullName}</p>
                     <p>Mã: {matchingStudent.studentCode}</p>
                     <p>Lớp: {matchingStudent.classId?.className}</p>
                   </div>
                 </div>
               </div>
             ) : detected ? (
-              <div className="space-y-2 text-sm text-slate-300">
+              <div className="space-y-2 text-sm font-semibold text-slate-700">
                 <p className="rounded-lg bg-mint/10 px-3 py-2 font-semibold text-mint">Điểm danh thành công</p>
-                <p className="text-xl font-bold text-white">{detected.fullName}</p>
+                <p className="text-xl font-black text-slate-950">{detected.fullName}</p>
                 <p>Mã: {detected.studentCode}</p>
                 <p>Lớp: {detected.classId?.className}</p>
                 <p>Độ chính xác: <span className="text-mint">{detected.confidence}%</span></p>
@@ -423,7 +433,7 @@ export default function FaceAttendance() {
         {scanLog.length ? (
           <div className="grid gap-2 text-sm">
             {scanLog.map((row) => (
-              <div key={row.id} className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2">
+              <div key={row.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2">
                 <span className="font-medium">{row.name}</span>
                 <span className="text-slate-400">{row.status}</span>
                 <span className="text-mint">{row.confidence}</span>

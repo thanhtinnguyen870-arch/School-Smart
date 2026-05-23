@@ -73,7 +73,16 @@ export const today = async (req, res) => {
   if (req.query.classId) filter.classId = req.query.classId;
   res.json(await Attendance.find(filter).populate("studentId classId").sort("-checkInTime"));
 };
-export const studentAttendance = async (req, res) => res.json(await Attendance.find({ studentId: req.params.id }).populate("classId").sort("-date"));
+export const studentAttendance = async (req, res) => {
+  if (req.user.role === "student") {
+    const student = await Student.findOne({ userId: req.user._id }).select("_id");
+    if (!student || String(student._id) !== String(req.params.id)) {
+      return res.status(403).json({ message: "Forbidden: insufficient role" });
+    }
+  }
+
+  res.json(await Attendance.find({ studentId: req.params.id }).populate("classId").sort("-date"));
+};
 export const classAttendance = async (req, res) => res.json(await Attendance.find({ classId: req.params.classId }).populate("studentId").sort("-date"));
 
 export const deleteAttendance = async (req, res) => {

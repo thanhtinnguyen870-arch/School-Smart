@@ -9,7 +9,7 @@ router.use(protect);
 router.get("/student/available", available);
 router.get("/student/my-tests", authorize("student"), studentTests);
 router.get("/student/:id/my-result", authorize("student"), myResult);
-router.get("/", listTests);
+router.get("/", authorize("admin", "teacher"), listTests);
 router.get("/:id", getTest);
 router.post("/", authorize("admin", "teacher"), upload.fields([
   { name: "file", maxCount: 1 },

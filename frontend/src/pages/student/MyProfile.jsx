@@ -21,7 +21,7 @@ export default function MyProfile() {
       setSaving(true);
       await axiosClient.put("/auth/profile", {
         currentPassword: data.currentPassword,
-        newPassword: data.newPassword,
+        newPassword: data.newPassword
       });
       await fetchMe();
       event.currentTarget.reset();
@@ -36,31 +36,30 @@ export default function MyProfile() {
   return (
     <div className="grid gap-5 xl:grid-cols-[.9fr_1.1fr]">
       <div className="card">
-        <h1 className="text-2xl font-black">Thông tin cá nhân</h1>
-        <div className="mt-5 grid gap-3 text-slate-300">
-          <p><span className="text-slate-500">Họ tên:</span> {user?.name}</p>
-          <p><span className="text-slate-500">Email:</span> {user?.email}</p>
-          <p><span className="text-slate-500">Vai trò:</span> Học sinh</p>
+        <h1 className="text-2xl font-black text-slate-950">Thông tin cá nhân</h1>
+        <div className="mt-5 grid gap-3 font-semibold text-slate-700">
+          <p><span className="font-black text-slate-900">Họ tên:</span> {user?.name}</p>
+          <p><span className="font-black text-slate-900">Email:</span> {user?.email}</p>
+          <p><span className="font-black text-slate-900">Vai trò:</span> Học sinh</p>
         </div>
       </div>
 
       <form onSubmit={updatePassword} className="card grid gap-3">
         <div>
-          <h2 className="text-xl font-black">Đổi mật khẩu</h2>
-          <p className="mt-1 text-sm text-slate-400">Sau khi được cấp tài khoản, hãy đổi mật khẩu để bảo mật tài khoản cá nhân.</p>
+          <h2 className="text-xl font-black text-slate-950">Đổi mật khẩu</h2>
         </div>
 
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
           Mật khẩu hiện tại
           <input name="currentPassword" type="password" className="input" placeholder="Nhập mật khẩu hiện tại" required />
         </label>
 
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
           Mật khẩu mới
           <input name="newPassword" type="password" minLength={6} className="input" placeholder="Tối thiểu 6 ký tự" required />
         </label>
 
-        <label className="grid gap-2 text-sm font-semibold text-slate-300">
+        <label className="grid gap-2 text-sm font-black text-slate-700">
           Xác nhận mật khẩu mới
           <input name="confirmPassword" type="password" minLength={6} className="input" placeholder="Nhập lại mật khẩu mới" required />
         </label>

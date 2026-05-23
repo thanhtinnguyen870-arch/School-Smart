@@ -13,12 +13,14 @@ export default function StudentDashboard() {
     if (!user?.studentId) return;
 
     Promise.all([
+      axiosClient.get(`/students/${user.studentId}`),
       axiosClient.get(`/grades/student/${user.studentId}`),
       axiosClient.get(`/attendance/student/${user.studentId}`),
-      axiosClient.get("/assignments"),
       axiosClient.get("/notifications")
     ])
-      .then(([grades, attendance, assignments, notifications]) => {
+      .then(async ([student, grades, attendance, notifications]) => {
+        const classId = student?.classId?._id || student?.classId;
+        const assignments = await axiosClient.get(classId ? `/assignments?classId=${classId}` : "/assignments");
         setData({ grades, attendance, assignments, notifications });
       })
       .catch(() => {});

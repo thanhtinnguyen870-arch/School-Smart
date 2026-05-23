@@ -1,4 +1,5 @@
 import Grade from "../models/Grade.js";
+import Student from "../models/Student.js";
 
 const avg = (b) => {
   const scores = [b.oralScore, b.fifteenMinuteScore, b.onePeriodScore, b.midtermScore, b.finalScore].map(Number);
@@ -37,6 +38,13 @@ export const deleteGrade = async (req, res) => {
 };
 export const importExcel = async (req, res) => res.json({ message: "Excel uploaded. Parsing hook is ready for production import.", file: req.file?.filename });
 export const studentGrades = async (req, res) => {
+  if (req.user.role === "student") {
+    const student = await Student.findOne({ userId: req.user._id }).select("_id");
+    if (!student || String(student._id) !== String(req.params.id)) {
+      return res.status(403).json({ message: "Forbidden: insufficient role" });
+    }
+  }
+
   const filter = {
     studentId: req.params.id,
     ...(req.query.subject ? { subject: req.query.subject } : {})

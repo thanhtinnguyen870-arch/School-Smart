@@ -204,7 +204,17 @@ export const listTests = async (req, res) => {
 };
 
 export const getTest = async (req, res) => {
-  res.json(await Test.findById(req.params.id).populate("classId createdBy", "className name"));
+  const test = await Test.findById(req.params.id).populate("classId createdBy", "className name");
+  if (!test) return res.status(404).json({ message: "Không tìm thấy bài kiểm tra" });
+
+  if (req.user.role === "student") {
+    const student = await getStudentForRequest(req);
+    if (!student || String(test.classId?._id || test.classId) !== String(student.classId)) {
+      return res.status(403).json({ message: "Forbidden: insufficient role" });
+    }
+  }
+
+  res.json(test);
 };
 
 export const createTest = async (req, res) => {
@@ -269,6 +279,9 @@ export const submitTest = async (req, res) => {
   const student = req.user?.role === "student" ? await getStudentForRequest(req) : null;
   const studentId = student?._id || req.body.studentId;
   if (!studentId) return res.status(422).json({ message: "Không xác định được học sinh làm bài" });
+  if (student && String(test.classId) !== String(student.classId)) {
+    return res.status(403).json({ message: "Forbidden: insufficient role" });
+  }
 
   const existing = await TestResult.findOne({ testId: test._id, studentId });
   if (existing) return res.status(409).json({ message: "Bạn đã nộp bài kiểm tra này rồi. Mỗi học sinh chỉ được làm 1 lần." });

@@ -48,7 +48,7 @@ const calculateFaceMatchConfidence = (distance, threshold) => {
   return Math.round(70 + normalizedMatch * 29);
 };
 
-export const findBestFaceMatch = (descriptor, students, threshold = 0.52, minDistanceGap = 0.04) => {
+export const findBestFaceMatch = (descriptor, students, threshold = 0.52, minDistanceGap = 0.06) => {
   const candidates = students
     .filter((student) => Array.isArray(student.faceDescriptor) && student.faceDescriptor.length >= 128)
     .map((student) => {

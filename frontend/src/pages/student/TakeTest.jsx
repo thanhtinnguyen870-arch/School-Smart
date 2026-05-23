@@ -28,8 +28,8 @@ export default function TakeTest() {
         studentId: user.studentId,
         answers: test.questions.map((question, index) => ({
           questionId: question._id,
-          answer: answers[index],
-        })),
+          answer: answers[index]
+        }))
       });
       toast.success("Đã nộp bài. Điểm sẽ mở sau khi bài kiểm tra kết thúc 2 phút.");
       navigate("/student/tests");
@@ -44,13 +44,12 @@ export default function TakeTest() {
   return (
     <div className="card space-y-5">
       <div>
-        <h1 className="text-2xl font-black">{test?.title}</h1>
-        <p className="mt-1 text-sm text-slate-400">Chọn đáp án hoặc nhập câu trả lời tự luận, rồi nộp bài khi hoàn thành.</p>
+        <h1 className="text-2xl font-black text-slate-950">{test?.title || "Bài kiểm tra"}</h1>
       </div>
 
       {test?.questions?.map((question, index) => (
-        <div key={question._id} className="rounded-lg border border-slate-800 p-4">
-          <p className="font-semibold">
+        <div key={question._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <p className="font-black text-slate-900">
             {index + 1}. {question.questionText}
           </p>
 
@@ -58,13 +57,13 @@ export default function TakeTest() {
             <img
               src={questionImageUrl(question)}
               alt={question.imageName || `Câu ${index + 1}`}
-              className="mt-3 max-h-[360px] w-full rounded-lg border border-slate-800 object-contain"
+              className="mt-3 max-h-[360px] w-full rounded-xl border border-slate-200 object-contain"
             />
           )}
 
           {question.type === "multiple" ? (
             question.options.map((option) => (
-              <label key={option} className="mt-3 block rounded-lg border border-slate-800 px-3 py-2 text-slate-300 hover:border-cyan">
+              <label key={option} className="mt-3 block rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-700 transition hover:border-cyan hover:bg-sky-50">
                 <input
                   type="radio"
                   name={`q${index}`}

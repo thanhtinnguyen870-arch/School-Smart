@@ -19,19 +19,21 @@ export default function AssignmentDetail() {
   return (
     <div className="card max-w-3xl space-y-4">
       <div>
-        <h1 className="text-2xl font-black">{item?.title}</h1>
-        <p className="mt-1 text-sm text-slate-400">{item?.subject || "Bài tập"} - {item?.classId?.className || "Tất cả lớp"}</p>
+        <h1 className="text-2xl font-black text-slate-950">{item?.title || "Bài tập"}</h1>
+        <p className="mt-1 text-sm font-bold text-slate-500">
+          {item?.subject || "Bài tập"} - {item?.classId?.className || "Lớp của tôi"}
+        </p>
       </div>
 
-      <p className="whitespace-pre-line leading-7 text-slate-300">{item?.description}</p>
-      <p className="text-sm text-slate-400">Hạn nộp: {item?.deadline ? new Date(item.deadline).toLocaleString("vi-VN") : "-"}</p>
+      <p className="whitespace-pre-line leading-7 text-slate-700">{item?.description || "Chưa có nội dung."}</p>
+      <p className="text-sm font-bold text-slate-500">Hạn nộp: {item?.deadline ? new Date(item.deadline).toLocaleString("vi-VN") : "-"}</p>
 
       {item?.fileUrl && (
-        <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-3">
           {isImageFile(item) ? (
-            <img src={fileHref(item)} alt={item.fileName || item.title} className="max-h-[480px] w-full rounded-lg object-contain" />
+            <img src={fileHref(item)} alt={item.fileName || item.title} className="max-h-[480px] w-full rounded-xl object-contain" />
           ) : (
-            <a className="inline-flex items-center gap-2 text-cyan" href={fileHref(item)} target="_blank" rel="noreferrer">
+            <a className="inline-flex items-center gap-2 font-bold text-cyan" href={fileHref(item)} target="_blank" rel="noreferrer">
               <FileText size={18} /> Mở file đính kèm: {item.fileName || "Tệp bài tập"}
             </a>
           )}
